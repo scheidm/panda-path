@@ -1,0 +1,8 @@
+%leafletdiv#map{:style => "height:1000px"}
+:javascript 
+  var map = L.map('map').setView([0,0],5);
+  L.tileLayer('/assets/media/Azeroth.jpg',{
+      attribution: 'Map data from Kitty',
+      maxZoom: 5,
+
+  }).addTo(map);

@@ -1,0 +1,36 @@
+.frameworks {
+  height: 145px;
+  margin: 5px; }
+
+.img-lrg {
+  height: 250px;
+  margin: 10px 0px 10px; }
+
+.lang {
+  margin: 10px 0px 10px; }
+
+.progress {
+  background-image: none;
+  border-width: 2px;
+  border-style: solid;
+  border-color: #000;
+  border-radius: 25px;
+  margin: 0px; }
+
+.progress-bar {
+  background-image: none;
+  background-color: #60CADA; }
+
+.multilingual {
+  height: 100px; }
+
+.img-sm {
+  height: 40px;
+  margin: 10px 0px 10px; }
+
+.flag {
+  margin: 10px; }
+
+.lang-icon {
+  float: right;
+  margin: 0px 10px; }

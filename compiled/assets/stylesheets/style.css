@@ -1,0 +1,195 @@
+body {
+  color: #000; }
+
+a {
+  color: #328597; }
+
+a:focus {
+  color: #328597; }
+
+a:hover {
+  color: #60CADA; }
+
+@media (min-width: 768px) {
+  .text-right-responsive {
+    text-align: right; }
+
+  .text-left-responsive {
+    text-align: left; }
+
+  .text-center-responsive {
+    text-align: center; } }
+body, h1, h2, h3, h4, h5, h6 {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300; }
+
+#content h1, h2, h3 :before {
+  padding-top: 10px; }
+
+h1, h2, h3, h4, h5, h6 {
+  color: #3C686B; }
+
+h6,
+.h6 {
+  font-size: 85%;
+  text-transform: uppercase; }
+
+/* Thumbnail grid fix */
+.image {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 100%; }
+
+.image img {
+  position: absolute; }
+
+/* Make images responsive by default */
+img {
+  display: inline-block;
+    display-height: auto;
+    display-max-width: 100%; }
+
+/* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+.content {
+  padding-top: 70px;
+  padding-bottom: 50px; }
+
+.top-buffer {
+  margin-top: 30px; }
+
+.top-buffer-2x {
+  margin-top: 60px; }
+
+.navbar-brand > a {
+  color: #60CADA;
+  font-size: 24px;
+  font-weight: 300;
+  /*text-transform: capitalize*/
+   * text-decoration: none */ }
+
+nav#main-nav {
+  background-color: #011C17; }
+
+.navbar-brand > a:hover {
+  color: #328597; }
+
+.navbar-default .navbar-nav > li > a:hover {
+  color: #328597; }
+
+.navbar-default .navbar-nav > li > a:focus {
+  color: #328597; }
+
+.navbar-default .navbar-nav > li > a {
+  font-size: 18px; }
+
+.navbar-brand span {
+  font-size: 14px;
+  font-weight: 300;
+  text-transform: none;
+  vertical-align: center;
+  margin: 0; }
+
+#listing li a {
+  margin: 0px;
+  display: block;
+  width: 100%;
+  height: 100%; }
+
+.tag_box i.fa {
+  vertical-align: middle; }
+
+.footer span {
+  font-size: 12px;
+  font-weight: 300;
+  text-transform: none;
+  vertical-align: center;
+  margin: 0; }
+
+.content .badge {
+  font-weight: 300;
+  vertical-align: middle; }
+
+/* Custom container */
+.container-narrow {
+  margin: 0 auto;
+  max-width: 700px; }
+
+.container-narrow > hr {
+  margin: 30px 0; }
+
+html {
+  position: relative;
+  min-height: 100%; }
+
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 100px; }
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background-color: #fff; }
+
+/* columns of same height styles */
+.container-xs-height {
+  display: table;
+  padding-left: 0px;
+  padding-right: 0px; }
+
+.row-xs-height {
+  display: table-row; }
+
+.col-xs-height {
+  display: table-cell;
+  float: none; }
+
+@media (min-width: 768px) {
+  .container-sm-height {
+    display: table;
+    padding-left: 0px;
+    padding-right: 0px; }
+
+  .row-sm-height {
+    display: table-row; }
+
+  .col-sm-height {
+    display: table-cell;
+    float: none; } }
+@media (min-width: 992px) {
+  .container-md-height {
+    display: table;
+    padding-left: 0px;
+    padding-right: 0px; }
+
+  .row-md-height {
+    display: table-row; }
+
+  .col-md-height {
+    display: table-cell;
+    float: none; } }
+@media (min-width: 1200px) {
+  .container-lg-height {
+    display: table;
+    padding-left: 0px;
+    padding-right: 0px; }
+
+  .row-lg-height {
+    display: table-row; }
+
+  .col-lg-height {
+    display: table-cell;
+    float: none; } }
+/* firefox fix */
+.img-responsive {
+  width: 100%; }
+
+/* vertical alignment styles */
+.col-top {
+  vertical-align: top; }
+
+.col-middle {
+  vertical-align: middle; }
+
+.col-bottom {
+  vertical-align: bottom; }
