@@ -25,7 +25,6 @@
     <link href='/assets/stylesheets/bootstrap.css' rel='stylesheet'>
     <link href='/assets/stylesheets/leaflet.css' rel='stylesheet'>
     <link href='/assets/stylesheets/dataTables.bootstrap.css' rel='stylesheet'>
-    <link href='/assets/stylesheets/google_prettify/prettify.css' rel='stylesheet'>
     <link href='/assets/stylesheets/theme.css' rel='stylesheet'>
     <link href='/assets/stylesheets/local.css' rel='stylesheet'>
     <script language='javascript' src='/assets/javascripts/bootstrap.min.js' type='text/javascript'></script>
@@ -100,11 +99,15 @@
       <div class='content'>
         <leafletdiv id='map' style='height:1000px'></leafletdiv>
         <script>
-          var map = L.map('map').setView([0,0],5);
-          L.tileLayer('/assets/media/Azeroth.jpg',{
+          var map = L.map('map', {
+            center: [0,0],
+            zoom: 4
+          });
+          L.tileLayer('/assets/media/map-tiles/{z}/{x}/{y}.png',{
               attribution: 'Map data from Kitty',
+              minZoom: 1,
               maxZoom: 5,
-          
+              tms: true
           }).addTo(map);
         </script>
       </div>
