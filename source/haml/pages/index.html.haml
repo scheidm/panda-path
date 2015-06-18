@@ -1,8 +1,8 @@
-%leafletdiv#map{:style => "height:1000px"}
+%div#map{:style => "height:900px;width:1600px;position:absolute;left:auto"}
 :javascript 
-  var map = L.map('map', {
-    center: [0,0],
-    zoom: 4
+  var map = L.map('map', {//Center [vertical,horizontal]
+    center: [-55,-93],        //[-65 to 0, -93 to 93 ] at zoom 3
+    zoom: 5
   });
   L.tileLayer('/assets/media/map-tiles/{z}/{x}/{y}.png',{
       attribution: 'Map data from Kitty',
