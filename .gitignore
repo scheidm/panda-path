@@ -1,3 +1,4 @@
+*.db
 *.sw[a-z]
 .sass-cache/*
 node_modules/*
