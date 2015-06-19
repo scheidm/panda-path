@@ -1,0 +1,14 @@
+{
+  "name": "pandas-path",
+  "version": "0.0.1",
+  "description": "Wow adventure chronicler",
+  "main": "server.js",
+  "author": "Mark Scheid",
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "curlrequest": "^0.5.2",
+    "express": "^4.12.4",
+    "juice": "^1.2.0",
+    "request": "^2.58.0"
+  }
+}
