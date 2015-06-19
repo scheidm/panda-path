@@ -21,3 +21,12 @@ CREATE TABLE current_gear (
   offHand INTEGER DEFAULT NULL,
   PRIMARY KEY (name,realm)
 );
+CREATE TABLE items (
+  id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  quality TEXT NOT NULL,
+  slot TEXT NOT NULL
+  PRIMARY KEY (id)
+);
+  

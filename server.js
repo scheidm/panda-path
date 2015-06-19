@@ -57,12 +57,24 @@ function api_call(server, character, fields, cb){
   });
   console.log("api_call");
 }
-function gear_check(j){
+function query_gear_check(j){
+  var fs = require("fs");
+  var db_file = "pandaren.db";
+  var sqlite3 = require("sqlite3").verbose();
+  var db = new sqlite3.Database(db_file);
+  var util = require('util');
+	var query = util.format("SELECT * from current_gear WHERE (name = '%s' AND realm='%s')", j.name, j.realm);
+  db.each(query, function(err, row) {
+      console.log(row);
+  });
+}
+function gear_check(j,current){
   console.log("gear_check");
   var columns=["head","neck","shoulder","back","chest","shirt","tabard","wrist","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2","mainHand","offHand"];
   for ( var n in columns ){
     if(!j.items[ columns[n] ]){
       j.items[ columns[n] ]={id: "NULL"};
+    }else{
     }
   }
   j.name='"'+j.name+'"';
@@ -114,7 +126,7 @@ function dbCreate(){
   var fs = require("fs");
   var db_file = "pandaren.db";
   var sqlite3 = require("sqlite3").verbose();
-  var db = new sqlite3.Database(db_file);
+  var db = new sqlite3.database(db_file);
   var seed = fs.readFile('createDB.sql', 'utf8', function (err,data) {
     if (err) {
       return console.log(err);
@@ -127,10 +139,12 @@ function dbCreate(){
 }
 
 app.get('/scrape', function(req, res){
-  //dbCreate();
-  console.log('main');
-  api_call("ysera", "mysunanstars", "items", gear_check);
+  api_call("ysera", "mysunanstars", "items", query_gear_check);
+
   
+  //dbCreate();
+  //console.log('main');
+  //api_call("ysera", "mysunanstars", "items", gear_check);
   //var character = quest_update('ysera', 'Mysunanstars');
   //download_character_render("firetree","Corradhledo"); 
   res.send('Check your console!')
