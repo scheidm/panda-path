@@ -81,12 +81,13 @@ function query_gear_check(j){
 function gear_check(j,current_ids){
   var util = require('util');
   var columns=["head","neck","shoulder","back","chest","shirt","tabard","wrist","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2","mainHand","offHand"];
+  var items_flagged=[];
   for ( var n in columns ){
     var slot=columns[n];
     if(!j.items[ slot  ]){
       j.items[ slot ]={id: "NULL"};
     }else{
-      item_check(j, slot, current_ids);
+      items_flagged.push( j.items[ slot ] );
     }
   }
   j.name='"'+j.name+'"';
@@ -144,28 +145,11 @@ function db_save(statement){
   db.close();
   console.log("db_save");
 }
-function dbCreate(){
-  console.log("dbCreate");
-  var fs = require("fs");
-  var db_file = "pandaren.db";
-  var sqlite3 = require("sqlite3").verbose();
-  var db = new sqlite3.database(db_file);
-  var seed = fs.readFile('createDB.sql', 'utf8', function (err,data) {
-    if (err) {
-      return console.log(err);
-    }
-    console.log(data);
-    db.run(data);
-    db.close();
-  });
-  console.log("dbCreate");
-}
 
 app.get('/scrape', function(req, res){
-  api_call("ysera", "mysunanstars", "items", query_gear_check);
+  //api_call("ysera", "mysunanstars", "items", query_gear_check);
 
   
-  //dbCreate();
   //console.log('main');
   //api_call("ysera", "mysunanstars", "items", gear_check);
   //var character = quest_update('ysera', 'Mysunanstars');

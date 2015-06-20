@@ -1,6 +1,15 @@
-CREATE TABLE current_gear (
+CREATE TABLE persona (
+  persona_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   realm TEXT NOT NULL,
+  last_render INTEGER NOT NULL,
+  render_id INTEGER NOT NULL,
+  level INTEGER NOT NULL,
+  UNIQUE (persona_id),
+  PRIMARY KEY (name,realm)
+);
+CREATE TABLE current_gear (
+  persona_id INTEGER PRIMARY KEY NOT NULL,
   head INTEGER DEFAULT NULL,
   neck INTEGER DEFAULT NULL,
   shoulder INTEGER DEFAULT NULL,
@@ -19,14 +28,37 @@ CREATE TABLE current_gear (
   trinket2 INTEGER DEFAULT NULL,
   mainHand INTEGER DEFAULT NULL,
   offHand INTEGER DEFAULT NULL,
-  PRIMARY KEY (name,realm)
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
 );
 CREATE TABLE items (
-  id INTEGER NOT NULL,
+  item_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   name TEXT NOT NULL,
   icon TEXT NOT NULL,
   quality TEXT NOT NULL,
-  slot TEXT NOT NULL,
-  PRIMARY KEY (id)
+  slot TEXT NOT NULL
 );
-  
+CREATE TABLE render (
+  render_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  time INTEGER NOT NULL,
+  persona_id INTEGER NOT NULL,
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
+);
+CREATE TABLE ding (
+  ding_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  time integer NOT NULL,
+  level INTEGER NOT NULL,
+  persona_id INTEGER NOT NULL,
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
+);
+CREATE TABLE quest (
+  quest_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  time integer NOT NULL,
+  name TEXT NOT NULL,
+  realm TEXT NOT NULL,
+  zone TEXT NOT NULL,
+  quest_lvl INTEGER,
+  top integer,
+  left integer,
+  persona_id INTEGER NOT NULL,
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
+);
