@@ -26,7 +26,7 @@ CREATE TABLE items (
   name TEXT NOT NULL,
   icon TEXT NOT NULL,
   quality TEXT NOT NULL,
-  slot TEXT NOT NULL
+  slot TEXT NOT NULL,
   PRIMARY KEY (id)
 );
   
