@@ -65,22 +65,28 @@ function query_gear_check(j){
   var util = require('util');
 	var query = util.format("SELECT * from current_gear WHERE (name = '%s' AND realm='%s')", j.name, j.realm);
   db.each(query, function(err, row) {
-      console.log(row);
+      gear_check(j,row);
   });
 }
-function gear_check(j,current){
-  console.log("gear_check");
+function gear_check(j,current_ids){
   var columns=["head","neck","shoulder","back","chest","shirt","tabard","wrist","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2","mainHand","offHand"];
   for ( var n in columns ){
-    if(!j.items[ columns[n] ]){
-      j.items[ columns[n] ]={id: "NULL"};
+    var item=columns[n];
+    if(!j.items[ item  ]){
+      j.items[ item ]={id: "NULL"};
     }else{
+      var new_gear=j.items[ item ];
+      if( parseInt(current_ids[ item ])==parseInt(new_gear.id) ){
+        console.log('same old '+item);
+      }else{
+        console.log("new id "+new_gear.id);
+      }
     }
   }
   j.name='"'+j.name+'"';
   j.realm='"'+j.realm+'"';
   var util = require('util');
-	var statement = util.format( 'INSERT INTO current_gear VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s );',
+	var statement = util.format( 'INSERT OR IGNORE INTO current_gear VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s );',
     j.name,
     j.realm,
     j.items.head.id,
