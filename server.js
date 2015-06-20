@@ -64,10 +64,19 @@ function query_gear_check(j){
   var db = new sqlite3.Database(db_file);
   var util = require('util');
 	var query = util.format("SELECT * from current_gear WHERE (name = '%s' AND realm='%s')", j.name, j.realm);
+  console.log(query);
+  var missing=true;
   db.each(query, function(err, row) {
-      gear_check(j,row);
+    missing=false;
+    gear_check(j,row);
+    console.log(row);
   });
   db.close();
+  if(missing){
+    console.log('missing');
+    gear_check(j);
+  }
+  
 }
 function gear_check(j,current_ids){
   var util = require('util');
@@ -77,19 +86,46 @@ function gear_check(j,current_ids){
     if(!j.items[ slot  ]){
       j.items[ slot ]={id: "NULL"};
     }else{
-      var new_gear=j.items[ slot ];
-      var statement = util.format( "INSERT OR IGNORE INTO items VALUES ( \"%s\", \"%s\", \"%s\", \"%s\", \"%s\" );",
-        new_gear.id, new_gear.name, new_gear.icon, new_gear.quality, slot );
-      //db_save(statement);
+      item_check(j, slot, current_ids);
     }
   }
   j.name='"'+j.name+'"';
   j.realm='"'+j.realm+'"';
+  gear_update(j);
+  console.log("gear_check");
+}
+
+function item_check(j, slot, current_ids){
+  console.log('item_check');
+  var util = require('util');
+  var new_row = false;
+  var new_gear=j.items[ slot ];
+  var columns=["name","icon"];
+  for ( var c in columns ){
+    var column = columns[c];
+    new_gear[column]='"'+new_gear[column]+'"';
+  }
+  var statement = util.format( 'INSERT OR IGNORE INTO items VALUES ( %s, %s, %s, %s, %s );',
+    new_gear.id, new_gear.name, new_gear.icon, new_gear.quality, '"'+slot+'"' );
+  if (typeof current_ids !== 'undefined') {
+    if( parseint(current_ids[ slot ])==parseint(new_gear.id) ){
+      console.log('same old '+slot);
+    }else{
+      console.log("new id "+new_gear.id);
+    }
+  }else{
+    new_row = true;
+  }
+  console.log(statement);
+  if(new_row){db_save(statement)};
+}
+
+function gear_update(j){
+  var util = require('util');
 	var update = util.format( "UPDATE OR IGNORE current_gear SET head=%s, neck=%s, shoulder=%s, back=%s, chest=%s, shirt=%s, tabard=%s, wrist=%s, hands=%s, waist=%s, legs=%s, feet=%s, finger1=%s, finger2=%s, trinket1=%s, trinket2=%s, mainHand=%s, offHand=%s WHERE name=%s AND realm=%s;", j.items.head.id, j.items.neck.id, j.items.shoulder.id, j.items.back.id, j.items.chest.id, j.items.shirt.id, j.items.tabard.id, j.items.wrist.id, j.items.hands.id, j.items.waist.id, j.items.legs.id, j.items.feet.id, j.items.finger1.id, j.items.finger2.id, j.items.trinket1.id, j.items.trinket2.id, j.items.mainHand.id, j.items.offHand.id,j.name, j.realm );
 	var ignore = util.format( "INSERT OR IGNORE INTO current_gear VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s );", j.name, j.realm, j.items.head.id, j.items.neck.id, j.items.shoulder.id, j.items.back.id, j.items.chest.id, j.items.shirt.id, j.items.tabard.id, j.items.wrist.id, j.items.hands.id, j.items.waist.id, j.items.legs.id, j.items.feet.id, j.items.finger1.id, j.items.finger2.id, j.items.trinket1.id, j.items.trinket2.id, j.items.mainHand.id, j.items.offHand.id);
-  //db_save(update); 
-  //db_save(ignore); 
-  console.log("gear_check");
+  db_save(update); 
+  db_save(ignore); 
 }
 
 function db_save(statement){
