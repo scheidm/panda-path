@@ -45,20 +45,30 @@ CREATE TABLE render (
 );
 CREATE TABLE ding (
   ding_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  time integer NOT NULL,
-  level INTEGER NOT NULL,
   persona_id INTEGER NOT NULL,
+  time integer NOT NULL,
+  zone TEXT NOT NULL,
+  top integer,
+  left integer,
+  level INTEGER NOT NULL,
   FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
 );
 CREATE TABLE quest (
   quest_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  persona_id INTEGER NOT NULL,
   time integer NOT NULL,
-  name TEXT NOT NULL,
-  realm TEXT NOT NULL,
   zone TEXT NOT NULL,
-  quest_lvl INTEGER,
   top integer,
   left integer,
+  quest_lvl INTEGER,
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
+);
+CREATE TABLE gear (
+  gear_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   persona_id INTEGER NOT NULL,
+  time integer NOT NULL,
+  zone TEXT NOT NULL,
+  top integer,
+  left integer,
   FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
 );

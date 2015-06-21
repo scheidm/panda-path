@@ -129,18 +129,18 @@ function gear_update(j){
   db_save(ignore); 
 }
 
-function db_save(statement){
+function endpoint_sql_execute(queries){
+  console.log("db_save");
   var fs = require("fs");
   var db_file = "pandaren.db";
   var sqlite3 = require("sqlite3").verbose();
   var db = new sqlite3.Database(db_file);
   db.serialize(function(){
-    console.log("db_save");
-    console.log(statement);
-    console.log('state');
-    stmt = db.prepare(statement);
-    stmt.run();
-    stmt.finalize();
+    for( var x in queries){
+      statement = queries[x];
+      console.log(statement);
+      db.run(statement);
+    }
   });
   db.close();
   console.log("db_save");
