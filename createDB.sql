@@ -6,6 +6,20 @@ CREATE TABLE persona (
   level INTEGER NOT NULL,
   UNIQUE (name,realm)
 );
+CREATE TABLE quest (
+  quest_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  zone TEXT NOT NULL,
+  top integer,
+  left integer,
+  quest_lvl INTEGER
+);
+CREATE TABLE item (
+  item_id INTEGER PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  quality TEXT NOT NULL,
+  slot TEXT NOT NULL
+);
 CREATE TABLE current_gear (
   persona_id INTEGER PRIMARY KEY NOT NULL,
   head INTEGER DEFAULT NULL,
@@ -28,13 +42,6 @@ CREATE TABLE current_gear (
   offHand INTEGER DEFAULT NULL,
   FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
 );
-CREATE TABLE items (
-  item_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  name TEXT NOT NULL,
-  icon TEXT NOT NULL,
-  quality TEXT NOT NULL,
-  slot TEXT NOT NULL
-);
 CREATE TABLE render (
   render_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   time INTEGER NOT NULL,
@@ -42,31 +49,31 @@ CREATE TABLE render (
   FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
 );
 CREATE TABLE ding (
-  ding_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  persona_id INTEGER NOT NULL,
-  time integer NOT NULL,
-  zone TEXT NOT NULL,
-  top integer,
-  left integer,
   level INTEGER NOT NULL,
-  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
-);
-CREATE TABLE quest (
-  quest_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   persona_id INTEGER NOT NULL,
   time integer NOT NULL,
   zone TEXT NOT NULL,
   top integer,
   left integer,
-  quest_lvl INTEGER,
-  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id),
+  UNIQUE(level, persona_id)
+);
+CREATE TABLE quest_complete(
+  quest_id INTEGER NOT NULL,
+  persona_id INTEGER NOT NULL,
+  time integer NOT NULL,
+  FOREIGN KEY(quest_id) REFERENCES quest(quest_id),
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id),
+  UNIQUE (quest_id, persona_id)
 );
 CREATE TABLE gear (
-  gear_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  item_id INTEGER NOT NULL,
   persona_id INTEGER NOT NULL,
   time integer NOT NULL,
   zone TEXT NOT NULL,
   top integer,
   left integer,
-  FOREIGN KEY(persona_id) REFERENCES persona(persona_id)
+  FOREIGN KEY(persona_id) REFERENCES persona(persona_id),
+  FOREIGN KEY(item_id) REFERENCES item(item_id),
+  UNIQUE (item_id, persona_id)
 );
