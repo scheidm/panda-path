@@ -66,14 +66,13 @@ def api_call
   return resp
 end
 
-def persona_update( c )
+def persona_update( char )
   db = SQLite3::Database.new "pandaren.db"
   t=Time.now.to_i
-  char=gear_massage(c)
-  char=to_ostruct(c)
-  c['pid']=db.execute("SELECT persona_id FROM persona WHERE name=? AND realm=?",char['name'], char['realm']).first.first
-  db.execute("UPDATE OR IGNORE persona SET level=?, last_render=? WHERE name=? AND realm=?", char.level, t, char.name, char.realm)
-  update_armory(char)
+  char['pid']=db.execute("SELECT persona_id FROM persona WHERE name=? AND realm=?",char['name'], char['realm']).first.first
+  c=to_ostruct(char)
+  db.execute("UPDATE OR IGNORE persona SET level=?, last_render=? WHERE name=? AND realm=?", c.level, t, c.name, c.realm)
+  update_armory(c)
 end
 
 def new_persona( char )
@@ -94,9 +93,9 @@ end
 def gear_massage( char )
   columns=["head","neck","shoulder","back","chest","shirt","tabard","wrist","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2","mainHand","offHand"]
   char['equipped']={ 'ids' => [], 'slots' => []}
-  puts char
   columns.each{ |slot|
     cur =char['items'][ slot ] 
+    puts cur
     if cur.nil? then
       char['items'][ slot ]={id: 'NULL'}
       puts 'nil'
@@ -119,6 +118,9 @@ def gear_check( char )
 end
 
 def update_armory( char )
+  puts 'equipped'
+  puts char.equipped
+  puts 'equipped'
   db = SQLite3::Database.new "pandaren.db"
   existing = db.execute('SELECT item_id FROM item WHERE item_id IN (?);',char.equipped.ids.join(', '))
   if existing.nil?
@@ -136,7 +138,7 @@ def update_armory( char )
       db.execute("INSERT OR IGNORE INTO item VALUES( ?, ?, ?, ?, ? );",id, item.name, item.icon, item.quality, slot)
     end
     t=Time.now.to_i
-    db.execute("INSERT OR IGNORE INTO gear (item_id, persona_id, time) VALUES( ?, ?, ?);", id, char.pid,t)
+    db.execute("INSERT INTO gear (item_id, persona_id, time) VALUES ( ?, ?, ?);", id, char.pid,t)
   end
 end
 api_call

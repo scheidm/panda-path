@@ -70,7 +70,7 @@ CREATE TABLE gear (
   item_id INTEGER NOT NULL,
   persona_id INTEGER NOT NULL,
   time integer NOT NULL,
-  zone TEXT NOT NULL,
+  zone TEXT,
   top integer,
   left integer,
   FOREIGN KEY(persona_id) REFERENCES persona(persona_id),
