@@ -1,12 +1,11 @@
 CREATE TABLE persona (
-  persona_id INTEGER NOT NULL,
+  persona_id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   realm TEXT NOT NULL,
   last_render INTEGER NOT NULL,
   render_id INTEGER NOT NULL,
   level INTEGER NOT NULL,
-  UNIQUE (persona_id),
-  PRIMARY KEY (name,realm)
+  UNIQUE (name,realm)
 );
 CREATE TABLE current_gear (
   persona_id INTEGER PRIMARY KEY NOT NULL,
