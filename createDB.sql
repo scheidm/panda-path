@@ -3,7 +3,6 @@ CREATE TABLE persona (
   name TEXT NOT NULL,
   realm TEXT NOT NULL,
   last_render INTEGER NOT NULL,
-  render_id INTEGER NOT NULL,
   level INTEGER NOT NULL,
   UNIQUE (name,realm)
 );
