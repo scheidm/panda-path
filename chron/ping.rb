@@ -3,6 +3,8 @@ require 'yaml'
 require 'curb'
 require 'json'
 require 'sqlite3'
+require 'headless'
+require 'selenium-webdriver'
 
 
 
@@ -50,6 +52,22 @@ def sql
   # new_gear.id, new_gear.name, new_gear.icon, new_gear.quality, '"'+slot+'"' );
 	#var update = util.format( "UPDATE OR IGNORE current_gear SET head=?, neck=?, shoulder=?, back=?, chest=?, shirt=?, tabard=?, wrist=?, hands=?, waist=?, legs=?, feet=?, finger1=?, finger2=?, trinket1=?, trinket2=?, mainHand=?, offHand=? WHERE name=? AND realm=?;"
 	#var ignore = util.format( "INSERT OR IGNORE INTO current_gear VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ? );"
+end
+
+def wowhead_scrape(ids)
+  headless = Headless.new
+  headless.start
+
+  driver = Selenium::WebDriver.for :firefox
+  locs={}
+  ids.each{ |id|
+    driver.navigate.to "http://www.wowhead.com/quest=#{id}"
+    loc_string=driver.page_source.slice(/pin-(start)?end[^>]*/)
+    m=loc_string.match(/left: ([0-9.]*)%; top: ([0-9.]*)%/)
+    locs[id]={ left: m[1], top: m[2] }
+  }
+  headless.destroy
+  return locs
 end
 
 def api_call

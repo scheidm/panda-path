@@ -3,6 +3,8 @@ GEM
   specs:
     celluloid (0.16.0)
       timers (~> 4.0.0)
+    childprocess (0.5.6)
+      ffi (~> 1.0, >= 1.0.11)
     coderay (1.1.0)
     coffee-script (2.4.1)
       coffee-script-source
@@ -48,6 +50,7 @@ GEM
       guard-compat (~> 1.0)
     haml (4.0.6)
       tilt
+    headless (2.1.0)
     hitimes (1.2.2)
     http_parser.rb (0.6.0)
     libv8 (3.16.14.7)
@@ -71,7 +74,13 @@ GEM
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
     ref (1.0.5)
+    rubyzip (1.1.7)
     sass (3.4.13)
+    selenium-webdriver (2.46.2)
+      childprocess (~> 0.5)
+      multi_json (~> 1.0)
+      rubyzip (~> 1.0)
+      websocket (~> 1.0)
     shellany (0.0.1)
     slop (3.6.0)
     spoon (0.0.4)
@@ -87,6 +96,7 @@ GEM
     tilt (2.0.1)
     timers (4.0.1)
       hitimes
+    websocket (1.2.2)
 
 PLATFORMS
   ruby
@@ -99,6 +109,8 @@ DEPENDENCIES
   guard-sass
   guard-shell
   haml
+  headless
+  selenium-webdriver
   therubyracer
   thin
   tilt
