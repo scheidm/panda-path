@@ -29,7 +29,7 @@ CREATE TABLE item (
   item_id INTEGER PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   icon TEXT NOT NULL,
-  quality TEXT NOT NULL,
+  quality INTEGER NOT NULL,
   slot TEXT NOT NULL
 );
 CREATE TABLE current_gear (

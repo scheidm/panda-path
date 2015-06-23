@@ -81,6 +81,7 @@ def personify_json(char, char_db)
   char.last_render=c.shift
   char.last_quest=c.shift
   char.last_location=c.shift
+  char.last_location=1
   char.gear_md5=c.shift
   return char
 end
@@ -92,7 +93,7 @@ def new_persona( char )
   c=gear_massage(char)
   i=c.items
   db.execute("INSERT INTO persona (name,realm,last_render,level) VALUES (?, ?, ?, ?)", c.name, c.realm, t, c.level)
-  char_db=db.execute("SELECT persona_id, last_render, last_quest, gear_md5 FROM persona WHERE name=? AND realm=?", c.name, c.realm).first
+  char_db=db.execute("SELECT persona_id, last_render, last_quest, gear_md5 FROM persona WHERE name=? AND realm=?", c.name, c.realm)
   char=personify_json(char, char_db)
 	db.execute( 'INSERT INTO current_gear VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );', char.pid, i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id, i.mainHand.id, i.offHand.id )
   c=quest_check(c, true)
@@ -107,6 +108,7 @@ def quest_check( char, new_character=false )
   c=quests.shift
   t=Time.now.to_i
   last_quest=char.last_quest
+  puts "Last quest: #{char.last_quest}"
   puts last_quest
   while !new_character&&last_quest!=c&&quests.length>0
     puts 'eating old quests'
@@ -117,13 +119,13 @@ def quest_check( char, new_character=false )
     update_quest( new_quests )
   end
   while quests.length>0
-    puts 'storing new quests'
+    puts "storing new quests: #{c}"
     c=quests.shift
-    last_quest=c
     db.execute("INSERT INTO quest_complete VALUES ( ?, ?, ? )", c, char.pid, t )
     c=quests.shift
     char.last_quest=c
   end
+  puts "Last quest: #{char.last_quest}"
   if last_quest!=char.last_quest
     char.last_quest=last_quest
     char.dirty=true
@@ -221,7 +223,7 @@ def update_armory( char )
       db.execute("INSERT OR IGNORE INTO item VALUES( ?, ?, ?, ?, ? );",id, item.name, item.icon, item.quality, slot)
     end
     t=Time.now.to_i
-    db.execute("INSERT INTO gear (item_id, persona_id, time, loc_id) VALUES ( ?, ?, ?, ?);", id, char.pid,t, char.last_location)
+    db.execute("INSERT OR IGNORE INTO gear (item_id, persona_id, time, loc_id) VALUES ( ?, ?, ?, ?);", id, char.pid,t, char.last_location)
   end
 end
 api_call
