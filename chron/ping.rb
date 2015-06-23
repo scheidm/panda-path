@@ -20,7 +20,7 @@ def to_ostruct(object)
 end
 
 def config()
-  conf = YAML::load_file('panda.yaml')
+  conf = YAML::load_file('config/panda.yaml')
   return to_ostruct(conf)
 end
 
@@ -43,7 +43,7 @@ end
 def api_call
   c=config()
   resp=[]
-  db = SQLite3::Database.new "pandaren.db"
+  db = SQLite3::Database.new c.db_file
   c.characters.each{ |p|
     t="http://us.battle.net/api/wow/character/#{p.server}/#{p.name}?fields=quests,items&locale=en_US&apikey=#{c.wow_secret}"
     puts "api call to: #{t}"
@@ -75,7 +75,7 @@ end
 
 def rerender(c, char)
   puts 'rerender'
-  command="node #{c.render_script} #{char.realm} #{char.name}"
+  command="node #{c.proj_directory}#{c.render_script} #{char.realm} #{char.name}"
   puts command
   `#{command}`
   char.last_render=Time.now.to_i
@@ -84,7 +84,8 @@ def rerender(c, char)
 end 
 def ding_level_up(c)
   t=Time.now.to_i
-  db = SQLite3::Database.new "pandaren.db"
+  conf=config()
+  db = SQLite3::Database.new conf.db_file
   db.execute("INSERT INTO ding VALUES (?, ?, ?, ?)", c.level, c.pid, t, c.last_location)
 end
 
@@ -99,7 +100,8 @@ end
 
 def store_persona(c)
   puts 'store_persona'
-  db = SQLite3::Database.new "pandaren.db"
+  conf=config()
+  db = SQLite3::Database.new conf.db_file
   puts "last_render, last_quest, last_location, level, name, realm"
   puts "#{c.last_render}, #{c.last_quest}, #{c.last_location}, #{c.level}, #{c.name}, #{c.realm}"
   db.execute("UPDATE persona SET last_render=?, last_quest=?, last_location=?, level=?  WHERE name=? AND realm=?", c.last_render,  c.last_quest, c.last_location, c.level, c.name, c.realm)
@@ -123,7 +125,8 @@ end
 
 def new_persona( char )
   puts "***** new persona: #{char.realm}/#{char.name} *****"
-  db = SQLite3::Database.new "pandaren.db"
+  conf=config()
+  db = SQLite3::Database.new conf.db_file
   c=gear_massage(char)
   i=c.items
   db.execute("INSERT INTO persona (name,realm,last_render,level) VALUES (?, ?, ?, ?)", c.name, c.realm, c.last_render, c.level)
@@ -139,7 +142,8 @@ def new_persona( char )
 end
 
 def quest_check( char, new_character=false )
-  db = SQLite3::Database.new "pandaren.db"
+  conf=config()
+  db = SQLite3::Database.new conf.db_file
   puts 'quest check'
   quests = char.quests
   c=quests.shift
@@ -170,7 +174,8 @@ def quest_check( char, new_character=false )
 end
 
 def update_quest( new_quests )
-  db = SQLite3::Database.new "pandaren.db"
+  conf=config()
+  db = SQLite3::Database.new conf.db_file
   c = config()
   puts 'update quest'
   #quest_list=new_quests.join(', ')
@@ -225,7 +230,8 @@ def gear_check( c, skip_massage=false )
   md5=Digest::MD5.new
   c=gear_massage(c) unless skip_massage
   i=c.items
-  db = SQLite3::Database.new "pandaren.db"
+  conf=config()
+  db = SQLite3::Database.new conf.db_file
   gear=[i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id,i.mainHand.id, i.offHand.id, c.pid ]
   md5.update gear.join('')
   md5=String(md5)
@@ -240,7 +246,8 @@ end
 
 def update_armory( char )
   puts 'update armory'
-  db = SQLite3::Database.new "pandaren.db"
+  conf=config()
+  db = SQLite3::Database.new conf.db_file
   item_ids=char.equipped.ids.join(', ')
   existing = db.execute('SELECT item_id FROM item WHERE item_id IN (?);', item_ids)
   if existing.nil?
