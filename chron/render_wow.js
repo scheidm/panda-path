@@ -4,8 +4,8 @@ var util = require('util');
 var curl = require('curlrequest');
 var request = require('request');
 var cheerio = require('cheerio');
-var server = "ysera";
-var character = "mysunanstars";
+var server = process.argv[2];
+var character = process.argv[3];
 var url = util.format('http://us.battle.net/wow/en/character/%s/%s/simple',server,character);
 console.log("pinging "+url);
 

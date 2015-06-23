@@ -49,30 +49,35 @@ def api_call
     r = Curl::Easy.perform(t);
     j=JSON.parse(r.body);
     resp.push j
-    c=to_ostruct(j)
-    char_db=db.execute("SELECT persona_id, level, last_render, last_quest, last_location, gear_md5 FROM persona WHERE name=? AND realm=?",c.name, c.realm)
-    puts char_db[0]
+    char=to_ostruct(j)
+    char_db=db.execute("SELECT persona_id, level, last_render, last_quest, last_location, gear_md5 FROM persona WHERE name=? AND realm=?",char.name, char.realm)
     if char_db.length>0
+      puts "search for name/server:     id, level, last render, last quest, last location, gear md5"
+      puts "Found for #{char.name}/#{char.realm}: #{char_db[0].join(',    ')}"
       rerender=false
       ding=false
-      puts char_db[0][1]
-      puts c.level
-      if char_db[0][1]!=c.level
+      if char_db[0][1]!=char.level
         rerender=true
         ding=true
       end
-      puts ding
-      c=personify_json(c, char_db)
-      rerender if c.last_render < Date.today.prev_month.to_time.to_i
-      c=persona_update( c )
-      ding_level_up(c) if ding
+      char=personify_json(char, char_db)
+      rerender(c, char ) if char.last_render < Date.today.prev_month.to_time.to_i
+      char=persona_update( char )
+      ding_level_up(char) if ding
     else
-      new_persona c
+      new_persona char
     end
   }
   return resp
 end
 
+def rerender(c, char)
+  puts 'rerender'
+  command="node #{c.render_script} #{char.realm} #{char.name}"
+  puts command
+  `#{command}`
+  puts '/rerender'
+end 
 def ding_level_up(c)
   t=Time.now.to_i
   db = SQLite3::Database.new "pandaren.db"
@@ -80,12 +85,15 @@ def ding_level_up(c)
 end
 
 def persona_update( char )
+  puts 'persona update'
   db = SQLite3::Database.new "pandaren.db"
   c=quest_check(char)
   c=gear_check(c)
   if c.dirty
-    db.execute("UPDATE OR IGNORE persona SET last_quest=?, last_location=?, level=?  WHERE name=? AND realm=?", c.last_quest, c.last_location, c.level, char["name"], char["realm"])
+    puts "#{c.last_quest}, #{c.last_location}, #{c.level}, #{c.name}, #{c.realm}"
+    db.execute("UPDATE OR IGNORE persona SET last_quest=?, last_location=?, level=?  WHERE name=? AND realm=?", c.last_quest, c.last_location, c.level, c.name, c.realm)
   end
+  puts 'persona update'
   return c
 end
 
@@ -119,15 +127,15 @@ end
 
 def quest_check( char, new_character=false )
   db = SQLite3::Database.new "pandaren.db"
-  puts 'quest update'
+  puts 'quest check'
   quests = char.quests
   c=quests.shift
   t=Time.now.to_i
   last_quest=char.last_quest
   puts "Last quest: #{char.last_quest}"
   puts last_quest
+  puts 'eating old quests'
   while !new_character&&last_quest!=c&&quests.length>0
-    puts 'eating old quests'
     c=quests.shift
   end
   new_quests=Array.new quests
@@ -146,14 +154,14 @@ def quest_check( char, new_character=false )
     char.last_quest=last_quest
     char.dirty=true
   end
-  puts '/quest update'
+  puts '/quest check'
   return char
 end
 
 def update_quest( new_quests )
   db = SQLite3::Database.new "pandaren.db"
   c = config()
-  puts 'update'
+  puts 'update quest'
   #quest_list=new_quests.join(', ')
   #existing = db.execute("SELECT quest_id FROM quest WHERE quest_id IN ( ? ) ORDER BY quest_id ASC;", quest_list)
   #This is such a kludge, figure out why the above isn't working asap
@@ -174,8 +182,10 @@ def update_quest( new_quests )
     c=to_ostruct(j)
     db.execute("INSERT OR IGNORE INTO location (zone) VALUES( ? );", c.category)
     loc_id=db.last_insert_row_id
+    puts "#{q},#{c.title},#{c.level},#{loc_id}"
     db.execute("INSERT OR IGNORE INTO quest VALUES( ?, ?, ?, ? );", q, c.title, c.level, loc_id)
   }
+  puts '/update quest'
   return loc_id
 end
 
@@ -187,7 +197,6 @@ def gear_massage( char )
   char.equipped=equipped
   columns.each{ |slot|
     cur =char.items[ slot ] 
-    puts cur
     if cur.nil?||cur['id'].nil? then
       i=OpenStruct.new
       i.id='NULL'
@@ -201,10 +210,10 @@ def gear_massage( char )
 end
  
 def gear_check( c, skip_massage=false )
+  puts 'gear check'
   md5=Digest::MD5.new
   c=gear_massage(c) unless skip_massage
   i=c.items
-  puts i
   db = SQLite3::Database.new "pandaren.db"
   gear=[i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id,i.mainHand.id, i.offHand.id, c.pid ]
   md5.update gear.join('')
@@ -215,19 +224,18 @@ def gear_check( c, skip_massage=false )
     c.dirty=true
     update_armory(c)
   end
+  puts '/gear check'
   return c
 end
 
 def update_armory( char )
-  puts 'equipped'
-  puts 'equipped'
+  puts 'update armory'
   db = SQLite3::Database.new "pandaren.db"
   item_ids=char.equipped.ids.join(', ')
   existing = db.execute('SELECT item_id FROM item WHERE item_id IN (?);', item_ids)
   if existing.nil?
     existing=[]
   end
-  puts char.equipped
   for i in 0..char.equipped.ids.length-1
     id=char.equipped.ids[i]
     slot=char.equipped.slots[i]
@@ -243,5 +251,6 @@ def update_armory( char )
     t=Time.now.to_i
     db.execute("INSERT OR IGNORE INTO gear (item_id, persona_id, time, loc_id) VALUES ( ?, ?, ?, ?);", id, char.pid,t, char.last_location)
   end
+  puts 'update armory'
 end
 api_call
