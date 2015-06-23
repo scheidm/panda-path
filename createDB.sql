@@ -4,16 +4,26 @@ CREATE TABLE persona (
   realm TEXT NOT NULL,
   last_render INTEGER NOT NULL,
   last_quest INTEGER,
+  last_location INTEGER,
   level INTEGER NOT NULL,
   gear_md5 TEXT DEFAULT NULL,
   UNIQUE (name,realm)
 );
-CREATE TABLE quest (
-  quest_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+
+CREATE TABLE location(
+  loc_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   zone TEXT NOT NULL,
   top integer,
-  left integer,
-  quest_lvl INTEGER
+  left integer
+);
+
+CREATE INDEX location_zone ON location(zone);
+
+CREATE TABLE quest (
+  quest_id INTEGER PRIMARY KEY NOT NULL,
+  title INTEGER,
+  level INTEGER,
+  loc_id INTEGER
 );
 CREATE TABLE item (
   item_id INTEGER PRIMARY KEY NOT NULL,
@@ -54,9 +64,7 @@ CREATE TABLE ding (
   level INTEGER NOT NULL,
   persona_id INTEGER NOT NULL,
   time integer NOT NULL,
-  zone TEXT NOT NULL,
-  top integer,
-  left integer,
+  loc_id INTEGER,
   FOREIGN KEY(persona_id) REFERENCES persona(persona_id),
   UNIQUE(level, persona_id)
 );
@@ -72,9 +80,7 @@ CREATE TABLE gear (
   item_id INTEGER NOT NULL,
   persona_id INTEGER NOT NULL,
   time integer NOT NULL,
-  zone TEXT,
-  top integer,
-  left integer,
+  loc_id INTEGER NOT NULL,
   FOREIGN KEY(persona_id) REFERENCES persona(persona_id),
   FOREIGN KEY(item_id) REFERENCES item(item_id),
   UNIQUE (item_id, persona_id)
