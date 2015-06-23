@@ -3,7 +3,9 @@ CREATE TABLE persona (
   name TEXT NOT NULL,
   realm TEXT NOT NULL,
   last_render INTEGER NOT NULL,
+  last_quest INTEGER,
   level INTEGER NOT NULL,
+  gear_md5 TEXT DEFAULT NULL,
   UNIQUE (name,realm)
 );
 CREATE TABLE quest (

@@ -1,4 +1,5 @@
 require 'ostruct'
+require 'digest'
 require 'yaml'
 require 'curb'
 require 'json'
@@ -73,24 +74,37 @@ end
 def api_call
   c=config()
   resp=[]
+  db = SQLite3::Database.new "pandaren.db"
   c.characters.each{ |p|
     t="http://us.battle.net/api/wow/character/#{p.server}/#{p.name}?fields=quests,items&locale=en_US&apikey=#{c.wow_secret}"
     r = Curl::Easy.perform(t);
     j=JSON.parse(r.body);
     resp.push j
-    new_persona( j )
-    persona_update( j )
+    char_db=db.execute("SELECT persona_id, last_render, last_quest, gear_md5 FROM persona WHERE name=? AND realm=?",j['name'], j['realm'])
+    if char_db.length>0
+      personif_json(char, char_db)
+      persona_update( j, char_db )
+    else
+      new_persona j
+    end
   }
   return resp
 end
 
-def persona_update( char )
+def persona_update( char,char_db )
   db = SQLite3::Database.new "pandaren.db"
   t=Time.now.to_i
-  char['pid']=db.execute("SELECT persona_id FROM persona WHERE name=? AND realm=?",char['name'], char['realm']).first.first
-  c=to_ostruct(char)
-  db.execute("UPDATE OR IGNORE persona SET level=?, last_render=? WHERE name=? AND realm=?", c.level, t, c.name, c.realm)
-  update_armory(c)
+  c=gear_check(char)
+  c=quest_update(c)
+  db.execute("UPDATE OR IGNORE persona SET level=?, last_render=? WHERE name=? AND realm=?", char["level"], t, char["name"], char["realm"])
+end
+
+def personify_json(char, char_db)
+  char['pid']=char_db.shift
+  char['last_render']=char_db.shift
+  char['last_quest']=char_db.shift
+  char['gear_md5']=char_db.shift
+  return char
 end
 
 def new_persona( char )
@@ -101,11 +115,37 @@ def new_persona( char )
   puts c
   i=c.items
   db.execute("INSERT INTO persona (name,realm,last_render,level) VALUES (?, ?, ?, ?)", c.name, c.realm, t, c.level)
-  pid = db.execute("SELECT persona_id FROM persona WHERE name=? AND realm=?",c.name, c.realm).first.first
-	db.execute( 'INSERT INTO current_gear VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );', pid, i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id, i.mainHand.id, i.offHand.id )
+  char_db=db.execute("SELECT persona_id, last_render, last_quest, gear_md5 FROM persona WHERE name=? AND realm=?", c.name, c.realm).first
+  char=personify_json(char, char_db)
+	db.execute( 'INSERT INTO current_gear VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );', char['pid'], i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id, i.mainHand.id, i.offHand.id )
+  c=gear_check(char)
+  quest_update(c)
   puts db.changes
   puts '/new_persona'
+end
 
+def quest_update( char )
+  db = SQLite3::Database.new "pandaren.db"
+  puts 'quest update'
+  quests = char.quests
+  c=quests.shift
+  t=Time.now.to_i
+  last_quest=char.last_quest
+  while !last_quest.nil?&&last_quest!=c&&quests.length>0
+    puts 'eating old quests'
+    c=quests.shift
+  end
+  while quests.length>0
+    puts 'storing new quests'
+    c=quests.shift
+    last_quest=c
+    db.execute("INSERT INTO quest_complete VALUES ( ?, ?, ? )", c, char.pid, t )
+    c=quests.shift
+  end
+  if last_quest!=char.last_quest
+    db.execute( 'UPDATE persona SET last_quest=? WHERE persona_id=?', last_quest, char.pid)
+  end
+  puts '/quest update'
 end
 
 def gear_massage( char )
@@ -114,7 +154,7 @@ def gear_massage( char )
   columns.each{ |slot|
     cur =char['items'][ slot ] 
     puts cur
-    if cur.nil? then
+    if cur.nil?||cur['id'].nil? then
       char['items'][ slot ]={id: 'NULL'}
       puts 'nil'
     else
@@ -126,13 +166,22 @@ def gear_massage( char )
 end
  
 def gear_check( char )
+  md5=Digest::MD5.new
   c=to_ostruct( gear_massage(char) )
   i=c.items
   puts c
   db = SQLite3::Database.new "pandaren.db"
-	db.execute( 'UPDATE OR IGNORE current_gear SET head=?, neck=?, shoulder=?, back=?, chest=?, shirt=?, tabard=?, wrist=?, hands=?, waist=?, legs=?, feet=?, finger1=?, finger2=?, trinket1=?, trinket2=?, mainHand=?, offHand=? WHERE name=? AND realm=?;', i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id,i.mainHand.id, i.offHand.id, i.name, i.realm )
-  if db.changes>0
+  gear=[i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id,i.mainHand.id, i.offHand.id, c.pid ]
+  md5.update gear.join('')
+  md5=String(md5)
+	db.execute( 'UPDATE current_gear SET head=?, neck=?, shoulder=?, back=?, chest=?, shirt=?, tabard=?, wrist=?, hands=?, waist=?, legs=?, feet=?, finger1=?, finger2=?, trinket1=?, trinket2=?, mainHand=?, offHand=? WHERE persona_id=?;', )
+  if c.gear_md5!=md5
+    puts 'updating armory'
+    c.gear_md5=md5
+    db.execute( 'UPDATE persona SET gear_md5=? WHERE persona_id=?;', md5, c.pid )
+    update_armory(c)
   end
+  return c
 end
 
 def update_armory( char )
