@@ -1,4 +1,5 @@
 require 'ostruct'
+require 'date'
 require 'digest'
 require 'yaml'
 require 'curb'
@@ -52,17 +53,30 @@ def api_call
     char_db=db.execute("SELECT persona_id, level, last_render, last_quest, last_location, gear_md5 FROM persona WHERE name=? AND realm=?",c.name, c.realm)
     puts char_db[0]
     if char_db.length>0
+      rerender=false
+      ding=false
+      puts char_db[0][1]
+      puts c.level
       if char_db[0][1]!=c.level
-        `node c.render_script`
-        char_db[0][2]-Time.now.to_i
+        rerender=true
+        ding=true
       end
+      puts ding
       c=personify_json(c, char_db)
-      persona_update( c )
+      rerender if c.last_render < Date.today.prev_month.to_time.to_i
+      c=persona_update( c )
+      ding_level_up(c) if ding
     else
       new_persona c
     end
   }
   return resp
+end
+
+def ding_level_up(c)
+  t=Time.now.to_i
+  db = SQLite3::Database.new "pandaren.db"
+  db.execute("INSERT INTO ding VALUES (?, ?, ?, ?)", c.level, c.pid, t, c.last_location)
 end
 
 def persona_update( char )
@@ -72,6 +86,7 @@ def persona_update( char )
   if c.dirty
     db.execute("UPDATE OR IGNORE persona SET last_quest=?, last_location=?, level=?  WHERE name=? AND realm=?", c.last_quest, c.last_location, c.level, char["name"], char["realm"])
   end
+  return c
 end
 
 def personify_json(char, char_db)
@@ -97,7 +112,8 @@ def new_persona( char )
   char=personify_json(char, char_db)
 	db.execute( 'INSERT INTO current_gear VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );', char.pid, i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id, i.mainHand.id, i.offHand.id )
   c=quest_check(c, true)
-  c=gear_check(char)
+  c=gear_check(char, true)
+  ding_level_up(c)
   puts '/new_persona'
 end
 
@@ -171,6 +187,7 @@ def gear_massage( char )
   char.equipped=equipped
   columns.each{ |slot|
     cur =char.items[ slot ] 
+    puts cur
     if cur.nil?||cur['id'].nil? then
       i=OpenStruct.new
       i.id='NULL'
@@ -183,9 +200,9 @@ def gear_massage( char )
   return char
 end
  
-def gear_check( char )
+def gear_check( c, skip_massage=false )
   md5=Digest::MD5.new
-  c=gear_massage(char)
+  c=gear_massage(c) unless skip_massage
   i=c.items
   puts i
   db = SQLite3::Database.new "pandaren.db"
@@ -220,6 +237,7 @@ def update_armory( char )
       x==id
     }
     if existing.length==l
+      puts "#{id},#{item.name},#{item.icon},#{item.quality},#{item.slot}"
       db.execute("INSERT OR IGNORE INTO item VALUES( ?, ?, ?, ?, ? );",id, item.name, item.icon, item.quality, slot)
     end
     t=Time.now.to_i
