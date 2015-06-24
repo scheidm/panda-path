@@ -34,8 +34,8 @@ def conf
 end 
 conf=conf()
 puts conf.log_file
-set :output, conf.proj_directory+conf.log_file
-every 7.minutes do
+set :output, {:error => conf.proj_directory+conf.log_file, :standard => conf.proj_directory+conf.log_file}
+every 1.minute do
   conf=conf()
   to_do="ruby #{conf.proj_directory}cron/ping.rb"
   puts to_do

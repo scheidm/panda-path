@@ -40,13 +40,14 @@ def wowhead_scrape(ids)
 end
 
 def api_call
+  start=Time.now
+  puts "BEGIN #{start}"
   c=config()
   resp=[]
   dbfile="#{c.proj_directory}#{c.db_file}"
   db = SQLite3::Database.new dbfile
   c.characters.each{ |p|
     t="http://us.battle.net/api/wow/character/#{p.server}/#{p.name}?fields=quests,items&locale=en_US&apikey=#{c.wow_secret}"
-    puts "db file: #{dbfile}"
     puts "api call to: #{t}"
     r = Curl::Easy.perform(t);
     j=JSON.parse(r.body);
@@ -71,6 +72,8 @@ def api_call
       new_persona char
     end
   }
+  end_time=Time.now
+  puts "END #{end_time}, #{end_time-start} seconds to process #{c.characters.length} characters"
   return resp
 end
 
