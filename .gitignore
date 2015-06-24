@@ -1,4 +1,5 @@
 *.jpg
+*.log
 *.db
 *.yaml
 *.sw[a-z]

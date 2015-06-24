@@ -6,7 +6,8 @@ var request = require('request');
 var cheerio = require('cheerio');
 var server = process.argv[2];
 var character = process.argv[3];
-var url = util.format('http://us.battle.net/wow/en/character/%s/%s/simple',server,character);
+var dir = process.argv[4];
+var url = util.format('http://us.battle.net/wow/en/character/%s/%s/simple', server, character);
 console.log("pinging "+url);
 
 request(url, function(error, response, html){

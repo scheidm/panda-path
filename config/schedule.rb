@@ -30,14 +30,14 @@ def to_ostruct(object)
   end
 end
 def conf
- return to_ostruct(YAML::load_file('config/panda.yaml'))
+ return to_ostruct(YAML::load_file('/sites/pandapath/config/panda.yaml'))
 end 
 conf=conf()
 puts conf.log_file
 set :output, conf.proj_directory+conf.log_file
-every 1.minute do
+every 7.minutes do
   conf=conf()
-  puts conf
-  to_do="ruby #{conf.proj_directoy}chron/ping.rb"
+  to_do="ruby #{conf.proj_directory}cron/ping.rb"
+  puts to_do
   command to_do
 end
