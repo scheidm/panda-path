@@ -6,7 +6,8 @@ var request = require('request');
 var cheerio = require('cheerio');
 var server = process.argv[2];
 var character = process.argv[3];
-var dir = process.argv[4];
+var level = process.argv[4];
+var dir = process.argv[5];
 var url = util.format('http://us.battle.net/wow/en/character/%s/%s/simple', server, character);
 console.log("pinging "+url);
 
@@ -19,7 +20,9 @@ request(url, function(error, response, html){
     image = image.replace(/^url|[\(\)]/g, '');
     console.log("downloading "+image);
     var util = require('util');
-    var filename=util.format("%s-%s.jpg",server,character);
+    var d = new Date();
+    var dstr=d.toISOString().substr(0,10);
+    var filename=util.format("%s%s-%s-lvl%s@%s.jpg", dir, server, character, level, dstr);
     var exec = require('child_process').exec;
     var command = util.format('curl %s > %s', image, filename);
     console.log(command);

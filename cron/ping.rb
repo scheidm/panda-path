@@ -47,7 +47,7 @@ def api_call
   dbfile="#{c.proj_directory}#{c.db_file}"
   db = SQLite3::Database.new dbfile
   c.characters.each{ |p|
-    t="http://us.battle.net/api/wow/character/#{p.server}/#{p.name}?fields=quests,items&locale=en_US&apikey=#{c.wow_secret}"
+    t="http://us.battle.net/api/wow/character/#{p.realm}/#{p.name}?fields=quests,items&locale=en_US&apikey=#{c.wow_secret}"
     puts "api call to: #{t}"
     r = Curl::Easy.perform(t);
     j=JSON.parse(r.body);
@@ -55,7 +55,7 @@ def api_call
     char=to_ostruct(j)
     char_db=db.execute("SELECT persona_id, level, last_render, last_quest, last_location, gear_md5 FROM persona WHERE name=? AND realm=?",char.name, char.realm)
     if char_db.length>0
-      puts "search for name/server:     id, level, last render, last quest, last location, gear md5"
+      puts "search for name/realm:     id, level, last render, last quest, last location, gear md5"
       puts "Found for #{char.name}/#{char.realm}: #{char_db[0].join(',    ')}"
       rerender=false
       ding=false
@@ -68,7 +68,6 @@ def api_call
       char=persona_update( char )
       ding_level_up(char) if ding
     else
-      char=rerender(c, char )
       new_persona char
     end
   }
@@ -77,11 +76,18 @@ def api_call
   return resp
 end
 
+def icon_fetch(icon)
+  conf=config
+  t="http://wow.zamimg.com/images/wow/icons/large/#{icon}.jpg"
+  command="curl #{t} > #{conf.proj_directory}#{conf.icon_dir}#{icon}.jpg"
+  puts command
+  `#{command}`
+end
 def rerender(c, char)
   puts 'rerender'
   script="#{c.proj_directory}#{c.render_script}"
-  out_dir="#{c.proj_directory}#{c.image_dir}"
-  command="node #{script} #{char.realm} #{char.name} #{out_dir}"
+  out_dir="#{c.proj_directory}#{c.render_dir}"
+  command="node #{script} #{char.realm} #{char.name} #{char.level} #{out_dir}"
   puts command
   `#{command}`
   char.last_render=Time.now.to_i
@@ -134,11 +140,13 @@ def new_persona( char )
   db = SQLite3::Database.new "#{conf.proj_directory}#{conf.db_file}"
   c=gear_massage(char)
   i=c.items
-  db.execute("INSERT INTO persona (name,realm,last_render,level) VALUES (?, ?, ?, ?)", c.name, c.realm, c.last_render, c.level)
+  t=Time.now.to_i
+  db.execute("INSERT INTO persona (name,realm,last_render,level) VALUES (?, ?, ?, ?)", c.name, c.realm, t, c.level)
     char_db=db.execute("SELECT persona_id, level, last_render, last_quest, last_location, gear_md5 FROM persona WHERE name=? AND realm=?",char.name, char.realm)
   puts "char_db #{char_db.first.join(',')}"
   char=personify_json(char, char_db)
 	db.execute( 'INSERT INTO current_gear VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );', char.pid, i.head.id, i.neck.id, i.shoulder.id, i.back.id, i.chest.id, i.shirt.id, i.tabard.id, i.wrist.id, i.hands.id, i.waist.id, i.legs.id, i.feet.id, i.finger1.id, i.finger2.id, i.trinket1.id, i.trinket2.id, i.mainHand.id, i.offHand.id )
+  c=rerender(conf, c )
   c=quest_check(c, true)
   c=gear_check(char, true)
   ding_level_up(c)
@@ -192,7 +200,7 @@ def update_quest( new_quests )
     existing=[]
   end
   quests=new_quests-existing
-  print "Quest count: #{quests.length}"
+  puts "Quest count: #{quests.length}"
   loc_id=nil
   quests.each{ |q|
     t="http://us.battle.net/api/wow/quest/#{q}?locale=en_US&apikey=#{c.wow_secret}"
@@ -268,6 +276,7 @@ def update_armory( char )
       x==id
     }
     if existing.length==l
+      icon_fetch item.icon
       puts "#{id},#{item.name},#{item.icon},#{item.quality},#{item.slot}"
       db.execute("INSERT OR IGNORE INTO item VALUES( ?, ?, ?, ?, ? );",id, item.name, item.icon, item.quality, slot)
     end
@@ -276,4 +285,4 @@ def update_armory( char )
   end
   puts "/update armory\n\n"
 end
-api_call
+send( ARGV[0] )
