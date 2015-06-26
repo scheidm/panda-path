@@ -103,10 +103,10 @@
             center: [-55,-93],        //[-65 to 0, -93 to 93 ] at zoom 3 otherwise shows grey
             zoom: 3
           });
-          L.tileLayer('/assets/media/pandaria/{z}/{x}/{y}.png',{
+          L.tileLayer('/assets/media/azeroth/{z}/{x}/{y}.png',{
               attribution: 'Map data from Kitty',
               minZoom: 1,
-              maxZoom: 3,
+              maxZoom: 5,
               tms: true
           }).addTo(map);
           var marker = L.marker([-55, -93]).addTo(map);
