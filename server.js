@@ -2,7 +2,7 @@ var express = require('express');
 var app     = express();
 app.set('view engine', 'jade');
 app.set('views', './views')
-app.use(express.static('compiled'));
+app.use(express.static('public'));
 function api_call(server, character, fields, cb){
   console.log("api_call");
   var config = require('./config');
